@@ -2,6 +2,7 @@ from flask import Flask, request, render_template, jsonify
 from passporteye import read_mrz
 import os
 from datetime import datetime
+import subprocess
 
 app = Flask(__name__)
 UPLOAD_FOLDER = 'uploads'
@@ -40,6 +41,15 @@ def upload():
     except Exception as e:
         print("❌ Error procesando imagen:", e)
         return jsonify(success=False, error=str(e)), 500
+
+# Endpoint para debug de Tesseract
+@app.route('/tesseract-version')
+def tesseract_version():
+    try:
+        version = subprocess.check_output(['tesseract', '--version']).decode('utf-8')
+        return jsonify(success=True, version=version)
+    except Exception as e:
+        return jsonify(success=False, error=str(e))
 
 if __name__ == '__main__':
     app.run(host='0.0.0.0', port=10000)
