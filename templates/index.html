@@ -1,0 +1,46 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>OCR MRZ Demo</title>
+</head>
+<body>
+  <h2>OCR MRZ (pasaporte/DNI)</h2>
+  <video id="video" autoplay playsinline width="320" height="240"></video>
+  <br>
+  <button onclick="capture()">Capturar</button>
+  <canvas id="canvas" width="320" height="240" style="display:none;"></canvas>
+  <form id="form">
+    <input type="hidden" name="image" id="imageInput">
+  </form>
+  <pre id="result"></pre>
+
+  <script>
+    const video = document.getElementById('video');
+    navigator.mediaDevices.getUserMedia({ video: true }).then(stream => {
+      video.srcObject = stream;
+    });
+
+    function capture() {
+      const canvas = document.getElementById('canvas');
+      const context = canvas.getContext('2d');
+      context.drawImage(video, 0, 0, 320, 240);
+      canvas.toBlob(blob => {
+        const formData = new FormData();
+        formData.append('image', blob, 'mrz.jpg');
+
+        fetch('/upload', {
+          method: 'POST',
+          body: formData
+        })
+        .then(response => response.json())
+        .then(data => {
+          document.getElementById('result').textContent = JSON.stringify(data, null, 2);
+        })
+        .catch(error => {
+          document.getElementById('result').textContent = 'Error: ' + error;
+        });
+      }, 'image/jpeg');
+    }
+  </script>
+</body>
+</html>
