@@ -32,7 +32,13 @@
           method: 'POST',
           body: formData
         })
-        .then(response => response.json())
+        .then(async response => {
+          if (!response.ok) {
+            const text = await response.text();
+            throw new Error(`HTTP ${response.status}: ${text}`);
+          }
+          return response.json();
+        })
         .then(data => {
           document.getElementById('result').textContent = JSON.stringify(data, null, 2);
         })
